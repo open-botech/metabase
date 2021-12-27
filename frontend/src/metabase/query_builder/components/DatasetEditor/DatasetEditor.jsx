@@ -200,6 +200,7 @@ function DatasetEditor(props) {
 
   const onFieldMetadataChange = useCallback(
     changes => {
+      console.log("### ON METADATA CHANGE", changes);
       setFieldMetadata({ field_ref: focusedFieldRef, changes });
     },
     [focusedFieldRef, setFieldMetadata],

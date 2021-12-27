@@ -4,7 +4,7 @@ import { fetchAlertsForQuestion } from "metabase/alert/alert";
 
 import { createAction } from "redux-actions";
 import _ from "underscore";
-import { getIn, assocIn, updateIn } from "icepick";
+import { getIn, assocIn, updateIn, merge } from "icepick";
 import { t } from "ttag";
 
 import * as Urls from "metabase/lib/urls";
@@ -773,6 +773,20 @@ export const updateCardVisualizationSettings = settings => async (
   getState,
 ) => {
   const question = getQuestion(getState());
+  const queryBuilderMode = getQueryBuilderMode(getState());
+  const datasetEditorTab = getDatasetEditorTab(getState());
+  const isEditingDatasetMetadata =
+    queryBuilderMode === "dataset" && datasetEditorTab === "metadata";
+  const changedSettings = Object.keys(settings);
+  const isColumnWidthResetEvent =
+    changedSettings.length === 1 &&
+    changedSettings.includes("table.column_widths") &&
+    !settings["table.column_widths"];
+
+  if (isEditingDatasetMetadata && isColumnWidthResetEvent) {
+    return;
+  }
+
   await dispatch(
     updateQuestion(question.updateSettings(settings), {
       run: "auto",
@@ -1579,6 +1593,9 @@ export const turnDatasetIntoQuestion = () => async (dispatch, getState) => {
 export const SET_RESULTS_METADATA = "metabase/qb/SET_RESULTS_METADATA";
 export const setResultsMetadata = createAction(SET_RESULTS_METADATA);
 
+export const SET_METADATA_DIFF = "metabase/qb/SET_METADATA_DIFF";
+export const setMetadataDiff = createAction(SET_METADATA_DIFF);
+
 export const setFieldMetadata = ({ field_ref, changes }) => (
   dispatch,
   getState,
@@ -1588,12 +1605,7 @@ export const setFieldMetadata = ({ field_ref, changes }) => (
 
   const nextColumnMetadata = resultsMetadata.columns.map(fieldMetadata => {
     const isTargetField = isSameField(field_ref, fieldMetadata.field_ref);
-    return isTargetField
-      ? {
-          ...fieldMetadata,
-          ...changes,
-        }
-      : fieldMetadata;
+    return isTargetField ? merge(fieldMetadata, changes) : fieldMetadata;
   });
 
   const nextResultsMetadata = {
@@ -1604,5 +1616,6 @@ export const setFieldMetadata = ({ field_ref, changes }) => (
   const nextQuestion = question.setResultsMetadata(nextResultsMetadata);
 
   dispatch(updateQuestion(nextQuestion));
+  dispatch(setMetadataDiff({ field_ref, changes }));
   dispatch(setResultsMetadata(nextResultsMetadata));
 };
