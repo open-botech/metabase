@@ -7,7 +7,7 @@ import { deterministicAssign } from "./deterministic";
 // NOTE: KEEP SYNCRONIZED WITH COLORS.CSS
 /* eslint-disable no-color-literals */
 const colors: Record<string, string> = {
-  brand: "#2e2d2d",
+  brand: "#2d303a",
   "brand-light": "#DDECFA",
   accent1: "#88BF4D",
   accent2: "#A989C5",

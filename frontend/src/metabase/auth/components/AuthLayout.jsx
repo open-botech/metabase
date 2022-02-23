@@ -15,7 +15,7 @@ const AuthLayout = ({ children }) => (
     alignItems="center"
     className="overflow-hidden relative"
   >
-    <Flex mt={-4} flexDirection="column">
+    <Flex mt={-4} alignItems="center" flexDirection="column">
       <LogoIcon height={65} />
       <Card p={3} mt={3} className="relative z2" width={420}>
         {children}
